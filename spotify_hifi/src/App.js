@@ -7,6 +7,22 @@ let standardStyle = {
   color: standardTextColor
 }
 
+let springServerData = {
+  user: {
+    accountName: 'John',
+    userPlaylists: [
+      {
+        name: 'cherry picked beats',
+        songs: ['Shadows','You','Nespole'],
+      },
+      {
+        name: 'Discover Weekly',
+        songs: ['Pillow','Nemo Score 1','Drift'],
+      }
+    ]
+  }
+};
+
 class Aggregate extends Component {
   render(){
     return (
@@ -43,10 +59,20 @@ class Playlist extends Component {
 }
 
 class App extends Component {
+  constructor(){
+    super();
+    this.state = {componentServerData: {
+
+    }}
+  }
+  componentDidMount(){
+    this.setState({componentServerData: springServerData })
+  }
   render() {
     return (
       <div style={{color: standardTextColor}} className="App">
-      <h1>The title</h1>
+      <h1>{this.componentServerData && this.state.componentServerData.user.accountName} Account
+        </h1>
         <Aggregate/>
         <Aggregate/>
         <Filter/>
