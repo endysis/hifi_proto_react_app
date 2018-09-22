@@ -13,21 +13,39 @@ let springServerData = {
     userPlaylists: [
       {
         name: 'cherry picked beats',
-        songs: ['Shadows','You','Nespole'],
+        songs: [{name : 'Shadows', duration:1495},{name: 'You', duration:1976},{name :'Nespole', duration:1323}],
       },
       {
         name: 'Discover Weekly',
-        songs: ['Pillow','Nemo Score 1','Drift'],
+        songs: [{name :'Pillow', duration: 1534},{name :'Nemo Score 1', duration: 1203},{name :'Drift', duration: 1634}],
       }
     ]
   }
 };
 
-class Aggregate extends Component {
+class PlaylistCounter extends Component {
   render(){
     return (
       <div style={{...standardStyle, width: "40%", display: 'inline-block'}}>
-          <h2 style={{color: standardTextColor}}>Playlist text</h2>
+          <h2 style={{color: standardTextColor}}>{this.props.playlistProps && this.props.playlistProps.length} playlists</h2>
+      </div>
+    );
+  }
+}
+
+class HoursCounter extends Component {
+  render(){
+    let listOfSongs = this.props.hoursProps.reduce((songsList, individualPlaylist) => {
+      return songsList.concat(individualPlaylist.songs)
+    },[])
+
+    let totalDuration = listOfSongs.reduce((sumTotal, individualSong)  => {
+      return sumTotal + individualSong.duration
+    }, 0)
+
+    return (
+      <div style={{...standardStyle, width: "40%", display: 'inline-block'}}>
+          <h2 style={{color: standardTextColor}}>{Math.round(totalDuration/60)} Hours</h2>
       </div>
     );
   }
@@ -54,31 +72,37 @@ class Playlist extends Component {
         <ul><li>Song 0</li><li>Song 1</li><li>Song 2</li></ul>
       </div>
     )
-
   }
 }
 
 class App extends Component {
   constructor(){
     super();
-    this.state = {componentServerData: {
-
-    }}
+    console.log("Constructor called")
+    this.state = {componentServerData: {}}
   }
-  componentDidMount(){
-    this.setState({componentServerData: springServerData })
+  componentDidMount() {
+    setTimeout(() => {
+      console.log("Component did mount called")
+      this.setState({componentServerData: springServerData})
+    }, 1000);
   }
   render() {
+    console.log("Render happening")
     return (
       <div style={{color: standardTextColor}} className="App">
-      <h1>{this.componentServerData && this.state.componentServerData.user.accountName} Account
+      {this.state.componentServerData.user ?
+        <div>
+        <h1>{this.state.componentServerData.user.accountName} Account
         </h1>
-        <Aggregate/>
-        <Aggregate/>
+        <PlaylistCounter playlistProps= {this.state.componentServerData.user.userPlaylists}/>
+        <HoursCounter hoursProps = {this.state.componentServerData.user.userPlaylists}/>
         <Filter/>
         <Playlist/>
         <Playlist/>
         <Playlist/>
+         </div> : <h1 style ={standardStyle}>"Loading..." </h1>
+       }
       </div>
     );
   }
