@@ -56,7 +56,8 @@ class Filter extends Component {
     return (
       <div style={standardStyle}>
           <img/>
-          <input type="text"/>
+          <input type="text" onKeyUp={event =>
+            this.props.whenTheTextChanges(event.target.value)}/>
           Filter
       </div>
     )
@@ -67,7 +68,7 @@ class Playlist extends Component {
   render(){
     let playlist = this.props.playlistProps
     return (
-    <div style = {{...standardStyle, display: 'inline-block',width: "25"}}>
+    <div style = {{...standardStyle,padding:"30px" ,display: 'inline-block',width: "25"}}>
         <img />
         <h3>{playlist.name}</h3>
         <ul>
@@ -86,15 +87,24 @@ class App extends Component {
   constructor(){
     super();
     console.log("Constructor called")
-    this.state = {componentServerData: {}}
+    this.state = {componentServerData: {},
+    filterText: ''
+
+    }
   }
   componentDidMount() {
     setTimeout(() => {
       console.log("Component did mount called")
       this.setState({componentServerData: springServerData})
     }, 1000);
+
+    setTimeout(() => {
+      this.setState({filterString: 'Weekly'});
+    }, 2000);
   }
+
   render() {
+
     console.log("Render happening")
     return (
       <div style={{color: standardTextColor}} className="App">
@@ -104,8 +114,11 @@ class App extends Component {
         </h1>
         <PlaylistCounter playlistProps= {this.state.componentServerData.user.userPlaylists}/>
         <HoursCounter hoursProps = {this.state.componentServerData.user.userPlaylists}/>
-        <Filter/>
-        {this.state.componentServerData.user.userPlaylists.map(individualPlaylist =>
+        <Filter whenTheTextChanges = {text => this.setState({filterText: text})}/>
+        {this.state.componentServerData.user.userPlaylists.filter(individualPlaylist =>
+          individualPlaylist.name.includes(
+            this.state.filterText)
+        ).map(individualPlaylist =>
             <Playlist playlistProps={individualPlaylist}/>
         )}
          </div> : <h1 style ={standardStyle}>"Loading..." </h1>
