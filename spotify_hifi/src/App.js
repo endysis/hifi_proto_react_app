@@ -97,28 +97,25 @@ class App extends Component {
       console.log("Component did mount called")
       this.setState({componentServerData: springServerData})
     }, 1000);
-
-    setTimeout(() => {
-      this.setState({filterString: 'Weekly'});
-    }, 2000);
   }
 
   render() {
-
     console.log("Render happening")
+    let playlistsToRender = this.state.componentServerData.user ?
+    this.state.componentServerData.user.userPlaylists.filter(individualPlaylist =>
+      individualPlaylist.name.toLowerCase().includes(
+        this.state.filterText.toLowerCase())
+      ) : []
     return (
       <div style={{color: standardTextColor}} className="App">
       {this.state.componentServerData.user ?
         <div>
         <h1>{this.state.componentServerData.user.accountName} Account
         </h1>
-        <PlaylistCounter playlistProps= {this.state.componentServerData.user.userPlaylists}/>
-        <HoursCounter hoursProps = {this.state.componentServerData.user.userPlaylists}/>
+        <PlaylistCounter playlistProps= {playlistsToRender}/>
+        <HoursCounter hoursProps = {playlistsToRender}/>
         <Filter whenTheTextChanges = {text => this.setState({filterText: text})}/>
-        {this.state.componentServerData.user.userPlaylists.filter(individualPlaylist =>
-          individualPlaylist.name.includes(
-            this.state.filterText)
-        ).map(individualPlaylist =>
+        {playlistsToRender.map(individualPlaylist =>
             <Playlist playlistProps={individualPlaylist}/>
         )}
          </div> : <h1 style ={standardStyle}>"Loading..." </h1>
