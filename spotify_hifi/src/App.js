@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import queryString from 'query-string';
 
 let standardTextColor = '#fff';
 let standardStyle = {
@@ -41,7 +42,8 @@ class HoursCounter extends Component {
 
     let totalDuration = listOfSongs.reduce((sumTotal, individualSong)  => {
       return sumTotal + individualSong.duration
-    }, 0)
+    }, 0
+  )
 
     return (
       <div style={{...standardStyle, width: "40%", display: 'inline-block'}}>
@@ -88,20 +90,43 @@ class App extends Component {
     super();
     console.log("Constructor called")
     this.state = {componentServerData: {},
-    filterText: ''
-
+    filterText: '',
+    headerTitle: ''
     }
   }
+
+  dealWithChange(e) {
+    const newHeaderTitle = e.target.value;
+    this.alterHeader(newHeaderTitle);
+  }
+
+  alterHeader(headerTitle) {
+    this.setState({headerTitle});
+  }
+
   componentDidMount() {
-    setTimeout(() => {
-      console.log("Component did mount called")
-      this.setState({componentServerData: springServerData})
-    }, 1000);
+    console.log("Component mount called")
+    let parsed = queryString.parse(window.location.search);
+    let the_big_access_token = parsed.access_token
+    console.log(parsed.access_token)
+
+    fetch('https://api.spotify.com/v1/me', {
+      headers: {'Authorization': 'Bearer ' + the_big_access_token}
+    }).then(response => response.json())
+      .then(data => this.setState({componentServerData: {user: {accountName: data.id}}}))
+
+
+    fetch('https://api.spotify.com/v1/me/playlists', {
+      headers: {'Authorization': 'Bearer ' + the_big_access_token}
+      }).then(response => response.json())
+        .then(data => this.setState({componentServerData: {user: {accountName: data.id}}}))
   }
 
   render() {
     console.log("Render happening")
-    let playlistsToRender = this.state.componentServerData.user ?
+    console.log(this.state.headerTitle)
+    let playlistsToRender = this.state.componentServerData.user &&
+    this.state.componentServerData.user.playlists ?
     this.state.componentServerData.user.userPlaylists.filter(individualPlaylist =>
       individualPlaylist.name.toLowerCase().includes(
         this.state.filterText.toLowerCase())
@@ -114,11 +139,13 @@ class App extends Component {
         </h1>
         <PlaylistCounter playlistProps= {playlistsToRender}/>
         <HoursCounter hoursProps = {playlistsToRender}/>
-        <Filter whenTheTextChanges = {text => this.setState({filterText: text})}/>
+        <Filter whenTheTextChanges = {text => this.setState({filterText: text, headerTitle: text})}/>
+
         {playlistsToRender.map(individualPlaylist =>
             <Playlist playlistProps={individualPlaylist}/>
         )}
-         </div> : <h1 style ={standardStyle}>"Loading..." </h1>
+         </div> : <button onClick={()=>window.location='http://localhost:8888/login'}
+         style={{padding: '20px', 'font-size': '55px','margin-top':'20px'}}>Enter Spotify</button>
        }
       </div>
     );
